@@ -1,48 +1,48 @@
 {
-    "$schema": "https://biomejs.dev/schemas/1.0.0/schema.json",
-    "files": {
-        "ignore": [
-            "node_modules",
-            "**/node_modules",
-            "CHANGELOG.md",
-            "cache",
-            "coverage",
-            "dist",
-            "tsconfig.json",
-            "tsconfig.*.json",
-            "generated.ts",
-            "pnpm-lock.yaml",
-            "src/lib",
-            ".nyc_output",
-            "test/spec-tests"
-        ]
-    },
-    "organizeImports": {
-        "enabled": true
-    },
-    "linter": {
-        "enabled": true,
-        "rules": {
-            "all": true,
-            "suspicious": {
-                "noExplicitAny": "warn"
-            },
-            "style": {
-                "useNamingConvention": "off"
-            }
-        }
-    },
-    "formatter": {
-        "enabled": true,
-        "formatWithErrors": true,
-        "lineWidth": 80,
-        "indentWidth": 4,
-        "indentStyle": "space"
-    },
-    "javascript": {
-        "formatter": {
-            "semicolons": "asNeeded",
-            "trailingComma": "none"
-        }
+  "$schema": "https://biomejs.dev/schemas/1.0.0/schema.json",
+  "files": {
+    "ignore": [
+      "node_modules",
+      "**/node_modules",
+      "CHANGELOG.md",
+      "cache",
+      "coverage",
+      "dist",
+      "tsconfig.json",
+      "tsconfig.*.json",
+      "generated.ts",
+      "pnpm-lock.yaml",
+      "src/lib",
+      ".nyc_output",
+      "test/spec-tests"
+    ]
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "all": true,
+      "suspicious": {
+        "noExplicitAny": "warn"
+      },
+      "style": {
+        "useNamingConvention": "off"
+      }
     }
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": true,
+    "lineWidth": 80,
+    "indentWidth": 2,
+    "indentStyle": "space"
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded",
+      "trailingComma": "none"
+    }
+  }
 }

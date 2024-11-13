@@ -1,0 +1,7 @@
+# deposit
+cast send --value 1ether --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+0x0000000071727de22e5e9d8baf0edac6f37da032 "depositTo(address)" 0xF74E27fD8e23519373c874F151C6fb32d3dD742A
+
+# check balance
+cast call --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+0x0000000071727de22e5e9d8baf0edac6f37da032 "balanceOf(address)" 0xF74E27fD8e23519373c874F151C6fb32d3dD742A
