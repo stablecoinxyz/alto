@@ -33,6 +33,7 @@ import {
   SIMPLE_ACCOUNT_FACTORY_V06_CREATECALL,
   SIMPLE_ACCOUNT_FACTORY_V07_CREATECALL,
   SBC_PAYMASTER_V07_BYTECODE,
+  SBC_TOKEN_BYTECODE,
 } from "./constants";
 
 const DETERMINISTIC_DEPLOYER = "0x4e59b44847b379578588920ca78fbf26c0b4956c";
@@ -285,15 +286,22 @@ const main = async () => {
   console.log("========== MISC ==========");
 
   await anvilClient.setCode({
-    address: "0xF74E27fD8e23519373c874F151C6fb32d3dD742A",
-    bytecode: SBC_PAYMASTER_V07_BYTECODE,
-  });
-
-  await anvilClient.setCode({
     address: "0xcA11bde05977b3631167028862bE2a173976CA11",
     bytecode: MULTICALL3_BYTECODE,
   });
   console.log("Etched Multicall Factory Bytecode");
+
+  await anvilClient.setCode({
+    address: "0xF74E27fD8e23519373c874F151C6fb32d3dD742A",
+    bytecode: SBC_PAYMASTER_V07_BYTECODE,
+  });
+  console.log("Etched SBC Paymaster Bytecode");
+
+  await anvilClient.setCode({
+    address: "0xfdcC3dd6671eaB0709A4C0f3F53De9a333d80798",
+    bytecode: SBC_TOKEN_BYTECODE,
+  });
+  console.log("Etched SBC Token Bytecode");
 
   console.log("Waiting for transactions...");
   for (const hash of txs) {
@@ -326,6 +334,8 @@ const main = async () => {
     "0x0DA6a956B9488eD4dd761E59f52FDc6c8068E6B5",
     "0x5de4839a76cf55d0c90e2061ef4386d962E15ae3",
     "0xca11bde05977b3631167028862be2a173976ca11",
+    "0xF74E27fD8e23519373c874F151C6fb32d3dD742A",
+    "0xfdcC3dd6671eaB0709A4C0f3F53De9a333d80798",
   ]);
 
   console.log("Done!");

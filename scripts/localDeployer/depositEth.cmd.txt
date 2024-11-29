@@ -5,3 +5,11 @@ cast send --value 1ether --rpc-url http://localhost:8545 --private-key 0xac0974b
 # check balance
 cast call --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
 0x0000000071727de22e5e9d8baf0edac6f37da032 "balanceOf(address)" 0xF74E27fD8e23519373c874F151C6fb32d3dD742A
+
+# get info about transaction by hash
+cast tx --rpc-url http://localhost:8545 -j 0xc02d950e80e28d844b153b052caea90356f92608ea1a33db7e4b816b06114a8a
+cast receipt --rpc-url http://localhost:8545 -j 0xc02d950e80e28d844b153b052caea90356f92608ea1a33db7e4b816b06114a8a
+
+# check balances
+cast balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+cast balance 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
