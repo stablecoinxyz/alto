@@ -23,3 +23,17 @@ cast code 0x7CB3a4DcED5eA72068504a6af8F0560F3018D4A1
 # check SBC paymaster deposit amount
 cast call --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
 0x0000000071727de22e5e9d8baf0edac6f37da032 "balanceOf(address)" 0x7CB3a4DcED5eA72068504a6af8F0560F3018D4A1
+
+# check SBC balance of address
+cast call --rpc-url http://localhost:8545 --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a 0xb0D3a3603221a6F2c069183b06Cd40C5e717967e "balanceOf(address)" \
+0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+
+cast call --rpc-url http://localhost:8545 --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a 0xb0D3a3603221a6F2c069183b06Cd40C5e717967e "balanceOf(address)" \
+ 0x47eca140fB9e5a204e5c1A63f261f21BE702Fa89
+
+cast call --rpc-url http://localhost:8545 0xb0D3a3603221a6F2c069183b06Cd40C5e717967e "balanceOf(address)" \
+ 0x47eca140fB9e5a204e5c1A63f261f21BE702Fa89
+
+# check ownerOf NFT
+cast call --rpc-url http://localhost:8545 0xb819edABAEccc6E0eE44371a9A2Df019493DBb58 "ownerOf(uint256)" \
+ 0x0000000000000000000000000000000000000001
