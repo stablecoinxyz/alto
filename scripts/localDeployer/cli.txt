@@ -37,3 +37,7 @@ cast call --rpc-url http://localhost:8545 0xb0D3a3603221a6F2c069183b06Cd40C5e717
 # check ownerOf NFT
 cast call --rpc-url http://localhost:8545 0xb819edABAEccc6E0eE44371a9A2Df019493DBb58 "ownerOf(uint256)" \
  0x0000000000000000000000000000000000000001
+
+# ----------------------------------------------
+# check my 0x124b082e8df36258198da4caa3b39c7dfa64d9ce SBC balance
+cast call --rpc-url http://0.0.0.0:8545 0xf9FB20B8E097904f0aB7d12e9DbeE88f2dcd0F16 "balanceOf(address)" 0x124b082e8df36258198da4caa3b39c7dfa64d9ce
