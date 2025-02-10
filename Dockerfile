@@ -31,4 +31,4 @@ RUN pnpm build
 # RUN pnpm install -r
 
 # start app
-ENTRYPOINT ["pnpm", "start"]
+ENTRYPOINT ["pnpm", "start-base-sepolia"]
