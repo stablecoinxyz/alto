@@ -37,5 +37,7 @@ RUN pnpm build
 # install dependencies
 # RUN pnpm install -r
 
+RUN envsubst < config.baseSepolia.json.template > config.baseSepolia.json
+
 # start app
 ENTRYPOINT ["pnpm", "start-base-sepolia"]
