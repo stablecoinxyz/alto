@@ -47,11 +47,13 @@ RUN pnpm build
 COPY config.baseSepolia.json.template ./config.baseSepolia.json.template
 
 # replace variables in config template
-RUN echo $ALTO_BASE_SEPOLIA_RPC_URL
-RUN envsubst < config.baseSepolia.json
+RUN envsubst < config.baseSepolia.json.template > config.baseSepolia.json
+
+# expose port
+EXPOSE 4337
 
 # start app
-# ENTRYPOINT ["pnpm", "start-base-sepolia"]
+ENTRYPOINT ["pnpm", "start-base-sepolia"]
 
 # sleep infinity
-CMD ["tail", "-f", "/dev/null"]
+# CMD ["tail", "-f", "/dev/null"]
