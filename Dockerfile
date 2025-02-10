@@ -47,6 +47,7 @@ RUN pnpm build
 COPY config.baseSepolia.json.template ./config.baseSepolia.json.template
 
 # replace variables in config template
+RUN echo $ALTO_BASE_SEPOLIA_RPC_URL
 RUN envsubst < config.baseSepolia.json
 
 # start app
