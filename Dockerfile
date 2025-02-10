@@ -29,9 +29,6 @@ COPY scripts/localDeployer/package.json ./scripts/localDeployer/
 # copy source code
 COPY . .
 
-# copy config template
-COPY config.baseSepolia.json.template ./config.baseSepolia.json.template
-
 RUN pnpm fetch
 
 # install dependencies
@@ -46,8 +43,11 @@ RUN pnpm build
 # install dependencies
 # RUN pnpm install -r
 
-# Run envsubst < config.baseSepolia.json.template > config.baseSepolia.json
-RUN envsubst < config.baseSepolia.json.template > config.baseSepolia.json
+# copy config template
+COPY config.baseSepolia.json.template ./config.baseSepolia.json.template
+
+# replace variables in config template
+RUN envsubst < config.baseSepolia.json
 
 # start app
 # ENTRYPOINT ["pnpm", "start-base-sepolia"]
