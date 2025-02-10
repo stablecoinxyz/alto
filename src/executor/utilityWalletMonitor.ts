@@ -6,7 +6,7 @@ import type { Address } from "abitype"
 export class UtilityWalletMonitor {
     private config: AltoConfig
     private utilityWalletAddress: Hex
-    private timer: NodeJS.Timer | undefined
+    private timer?: NodeJS.Timeout
     private metrics: Metrics
     private logger: Logger
 
@@ -57,10 +57,13 @@ export class UtilityWalletMonitor {
         this.timer = setInterval(
             this.updateMetrics.bind(this),
             this.config.utilityWalletMonitorInterval
-        ) as NodeJS.Timer
+        ) as NodeJS.Timeout
     }
 
     public stop() {
-        clearInterval(this.timer)
+        if (this.timer) {
+            clearInterval(this.timer)
+            this.timer = undefined
+        }
     }
 }

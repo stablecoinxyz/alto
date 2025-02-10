@@ -117,12 +117,13 @@ export class Server {
 
         this.fastify.addHook("onResponse", (request, reply) => {
             const ignoredRoutes = ["/health", "/metrics"]
-            if (ignoredRoutes.includes(request.routeOptions.url)) {
+            const routeUrl = request.routeOptions.url ?? request.url
+            if (ignoredRoutes.includes(routeUrl)) {
                 return
             }
 
             const labels = {
-                route: request.routeOptions.url,
+                route: routeUrl,
                 code: reply.statusCode,
                 method: request.method,
                 rpc_method: request.rpcMethod,
@@ -224,8 +225,16 @@ export class Server {
         reply.rpcStatus = "failed" // default to failed
         let requestId: number | null = null
 
+        const version = (request.params as any)?.version
+        if (!version && !this.config.defaultApiVersion) {
+            throw new RpcError(
+                "No API version specified and no default version configured",
+                ValidationErrors.InvalidFields
+            )
+        }
+
         const versionParsingResult = altoVersions.safeParse(
-            (request.params as any)?.version ?? this.config.defaultApiVersion
+            version ?? this.config.defaultApiVersion
         )
 
         if (!versionParsingResult.success) {

@@ -4,14 +4,21 @@ FROM node:20.12.2-alpine3.19
 # set working directory
 WORKDIR /app
 
-# install typescript
-RUN npm add -g typescript
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
 
-# copy package.json and pnpm-lock.yaml
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Install pnpm using corepack
+RUN corepack enable && corepack prepare pnpm@8.15.4 --activate
 
-# install pnpm and create global pnpm symlink
-RUN corepack install && corepack enable
+# Copy workspace config first
+COPY pnpm-workspace.yaml ./
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Copy all workspace package.json files
+COPY src/package.json ./src/
+COPY scripts/localDeployer/package.json ./scripts/localDeployer/
 
 # copy source code
 COPY . .
