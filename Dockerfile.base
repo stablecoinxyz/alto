@@ -36,13 +36,13 @@ RUN pnpm install -r
 RUN pnpm build
 
 # copy config template
-COPY config.baseSepolia.json.template ./config.baseSepolia.json.template
+COPY config.base.json.template ./config.base.json.template
 
 # replace variables in config template
-RUN envsubst < config.baseSepolia.json.template > config.baseSepolia.json
+RUN envsubst < config.base.json.template > config.base.json
 
 # expose port
 EXPOSE 4337
 
 # start app
-ENTRYPOINT ["pnpm", "start-base-sepolia"]
+ENTRYPOINT ["pnpm", "start-base"]

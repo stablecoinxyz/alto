@@ -1,5 +1,5 @@
 {
-    "network-name": "base-sepolia",
+    "network-name": "base",
     "rpc-url": "$ALTO_RPC_URL",
     "min-entity-stake": 1,
     "min-executor-balance": "100000000000000000",
