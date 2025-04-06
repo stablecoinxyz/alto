@@ -9,6 +9,7 @@ import {
 } from "@alto/types"
 import type { Metrics } from "@alto/utils"
 import websocket from "@fastify/websocket"
+import cors from "@fastify/cors"
 import * as sentry from "@sentry/node"
 import Fastify, {
     type FastifyBaseLogger,
@@ -92,6 +93,14 @@ export class Server {
         })
 
         this.fastify.register(rpcDecorators)
+        
+        // Register CORS
+        this.fastify.register(cors, {
+            origin: true, // allow all origins
+            methods: ['POST', 'GET', 'OPTIONS'],
+            allowedHeaders: ['Content-Type'],
+            credentials: true
+        })
 
         this.fastify.register(websocket, {
             options: {
