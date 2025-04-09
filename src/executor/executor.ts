@@ -184,18 +184,18 @@ export class Executor {
                         ) {
                             request.maxFeePerGas = scaleBigIntByPercent(
                                 request.maxFeePerGas,
-                                250n
+                                150n
                             )
                             request.maxPriorityFeePerGas = scaleBigIntByPercent(
                                 request.maxPriorityFeePerGas,
-                                250n
+                                150n
                             )
                         }
 
                         if (request.gasPrice) {
                             request.gasPrice = scaleBigIntByPercent(
                                 request.gasPrice,
-                                250n
+                                150n
                             )
                         }
                     }
