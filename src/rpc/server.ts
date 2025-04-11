@@ -167,7 +167,7 @@ export class Server {
     }
 
     public start(): void {
-        this.fastify.listen({ port: this.config.port, host: "0.0.0.0" })
+        this.fastify.listen({ port: this.config.port, host: '::', ipv6Only: false })
     }
 
     public async stop(): Promise<void> {
