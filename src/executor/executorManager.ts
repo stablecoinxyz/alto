@@ -12,7 +12,8 @@ import {
     type TransactionInfo,
     RejectedUserOp,
     UserOperationBundle,
-    UserOpInfo
+    UserOpInfo,
+    EntryPointV07Abi
 } from "@alto/types"
 import type { BundlingStatus, Logger, Metrics } from "@alto/utils"
 import {
@@ -535,7 +536,7 @@ export class ExecutorManager {
 
     async getUserOperationReceipt(userOperationHash: HexData32) {
         const userOperationEventAbiItem = getAbiItem({
-            abi: EntryPointV06Abi,
+            abi: EntryPointV07Abi,
             name: "UserOperationEvent"
         })
 
