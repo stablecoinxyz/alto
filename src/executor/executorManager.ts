@@ -6,14 +6,14 @@ import type {
 } from "@alto/mempool"
 import {
     type BundlingMode,
-    EntryPointV06Abi,
+    // EntryPointV06Abi,
+    EntryPointV07Abi,
     type HexData32,
     type SubmittedUserOp,
     type TransactionInfo,
     RejectedUserOp,
     UserOperationBundle,
-    UserOpInfo,
-    EntryPointV07Abi
+    UserOpInfo
 } from "@alto/types"
 import type { BundlingStatus, Logger, Metrics } from "@alto/utils"
 import {
