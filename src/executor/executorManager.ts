@@ -19,6 +19,7 @@ import type { BundlingStatus, Logger, Metrics } from "@alto/utils"
 import {
     getAAError,
     getBundleStatus,
+    minBigInt,
     parseUserOperationReceipt,
     scaleBigIntByPercent
 } from "@alto/utils"
@@ -277,12 +278,18 @@ export class ExecutorManager {
         }
 
         if (bundleResult.status === "bundle_success") {
-            const {
+            let {
                 userOpsBundled,
                 rejectedUserOps,
                 transactionRequest,
                 transactionHash
             } = bundleResult
+
+            // Increment submission attempts for all userOps submitted.
+            userOpsBundled = userOpsBundled.map((userOpInfo) => ({
+                ...userOpInfo,
+                submissionAttempts: userOpInfo.submissionAttempts + 1
+            }))
 
             const transactionInfo: TransactionInfo = {
                 executor: wallet,
@@ -295,7 +302,7 @@ export class ExecutorManager {
                 },
                 previousTransactionHashes: [],
                 lastReplaced: Date.now(),
-                firstSubmitted: Date.now(),
+                submissionAttempts: 1,
                 timesPotentiallyIncluded: 0
             }
 
@@ -464,7 +471,7 @@ export class ExecutorManager {
                                 }
                             )
 
-                            await this.eventManager.emitFrontranOnChain(
+                            this.eventManager.emitFrontranOnChain(
                                 userOpHash,
                                 transactionHash,
                                 blockNumber
@@ -489,7 +496,7 @@ export class ExecutorManager {
                                     transactionHash
                                 }
                             )
-                            await this.eventManager.emitFailedOnChain(
+                            this.eventManager.emitFailedOnChain(
                                 userOpHash,
                                 transactionHash,
                                 blockNumber
@@ -730,7 +737,7 @@ export class ExecutorManager {
 
     async replaceTransaction(
         txInfo: TransactionInfo,
-        reason: string
+        reason: "AA95" | "gas_price" | "stuck"
     ): Promise<void> {
         // Setup vars
         const {
@@ -741,13 +748,13 @@ export class ExecutorManager {
         } = txInfo
         const { userOps, entryPoint } = bundle
 
-        const gasPriceParameters = await this.gasPriceManager
+        const gasPriceParams = await this.gasPriceManager
             .tryGetNetworkGasPrice()
             .catch((_) => {
                 return undefined
             })
 
-        if (!gasPriceParameters) {
+        if (!gasPriceParams) {
             const rejectedUserOps = userOps.map((userOpInfo) => ({
                 ...userOpInfo,
                 reason: "Failed to get network gas price during replacement"
@@ -763,20 +770,26 @@ export class ExecutorManager {
             return
         }
 
+        // If the transaction is stuck increase gasPrice based on number of submission attempts.
+        if (reason === "stuck" || reason === "gas_price") {
+            const multiplier = 100n + BigInt(txInfo.submissionAttempts) * 20n
+            const multiplierCeiling = this.config.resubmitMultiplierCeiling
+
+            gasPriceParams.maxFeePerGas = scaleBigIntByPercent(
+                gasPriceParams.maxFeePerGas,
+                minBigInt(multiplier, multiplierCeiling)
+            )
+            gasPriceParams.maxPriorityFeePerGas = scaleBigIntByPercent(
+                gasPriceParams.maxPriorityFeePerGas,
+                minBigInt(multiplier, multiplierCeiling)
+            )
+        }
+
         const bundleResult = await this.executor.bundle({
             executor: executor,
             userOpBundle: bundle,
             nonce: transactionRequest.nonce,
-            gasPriceParams: {
-                maxFeePerGas: scaleBigIntByPercent(
-                    gasPriceParameters.maxFeePerGas,
-                    115n
-                ),
-                maxPriorityFeePerGas: scaleBigIntByPercent(
-                    gasPriceParameters.maxPriorityFeePerGas,
-                    115n
-                )
-            },
+            gasPriceParams,
             gasLimitSuggestion: transactionRequest.gas,
             isReplacementTx: true
         })
@@ -885,7 +898,11 @@ export class ExecutorManager {
             transactionHash: newTxHash
         } = bundleResult
 
-        const userOpsReplaced = userOpsBundled
+        // Increment submission attempts for all replaced userOps
+        const userOpsReplaced = userOpsBundled.map((userOpInfo) => ({
+            ...userOpInfo,
+            submissionAttempts: userOpInfo.submissionAttempts + 1
+        }))
 
         const newTxInfo: TransactionInfo = {
             ...txInfo,
@@ -896,20 +913,14 @@ export class ExecutorManager {
                 ...txInfo.previousTransactionHashes
             ],
             lastReplaced: Date.now(),
+            submissionAttempts: txInfo.submissionAttempts + 1,
             bundle: {
                 ...txInfo.bundle,
                 userOps: userOpsReplaced
             }
         }
 
-        await Promise.all(
-            userOpsReplaced.map(async (userOpInfo) => {
-                await this.mempool.replaceSubmitted({
-                    userOpInfo,
-                    transactionInfo: newTxInfo
-                })
-            })
-        )
+        await this.markUserOperationsAsReplaced(userOpsReplaced, newTxInfo)
 
         // Drop all userOperations that were rejected during simulation.
         await this.dropUserOps(entryPoint, rejectedUserOps)
@@ -924,6 +935,21 @@ export class ExecutorManager {
         )
 
         return
+    }
+
+    async markUserOperationsAsReplaced(
+        userOpsReplaced: UserOpInfo[],
+        newTxInfo: TransactionInfo
+    ) {
+        // Mark as replaced in mempool
+        await Promise.all(
+            userOpsReplaced.map(async (userOpInfo) => {
+                await this.mempool.replaceSubmitted({
+                    userOpInfo,
+                    transactionInfo: newTxInfo
+                })
+            })
+        )
     }
 
     async markUserOperationsAsSubmitted(
@@ -1004,12 +1030,17 @@ export class ExecutorManager {
                     .labels({ status: "included" })
                     .inc()
 
-                const { userOpHash, userOp } = userOpInfo
+                const { userOpHash, userOp, submissionAttempts } = userOpInfo
                 const opDetails = userOperationDetails[userOpHash]
 
                 const firstSubmitted = userOpInfo.addedToMempool
                 this.metrics.userOperationInclusionDuration.observe(
                     (Date.now() - firstSubmitted) / 1000
+                )
+
+                // Track the number of submission attempts for included ops
+                this.metrics.userOperationsSubmissionAttempts.observe(
+                    submissionAttempts
                 )
 
                 await this.mempool.removeSubmitted({ entryPoint, userOpHash })
@@ -1020,13 +1051,13 @@ export class ExecutorManager {
                 )
 
                 if (opDetails.status === "succesful") {
-                    await this.eventManager.emitIncludedOnChain(
+                    this.eventManager.emitIncludedOnChain(
                         userOpHash,
                         transactionHash,
                         blockNumber as bigint
                     )
                 } else {
-                    await this.eventManager.emitExecutionRevertedOnChain(
+                    this.eventManager.emitExecutionRevertedOnChain(
                         userOpHash,
                         transactionHash,
                         opDetails.revertReason || "0x",
@@ -1056,7 +1087,7 @@ export class ExecutorManager {
                 const { userOp, reason, userOpHash } = rejectedUserOp
                 await this.mempool.removeProcessing({ entryPoint, userOpHash })
                 await this.mempool.removeSubmitted({ entryPoint, userOpHash })
-                await this.eventManager.emitDropped(
+                this.eventManager.emitDropped(
                     userOpHash,
                     reason,
                     getAAError(reason)

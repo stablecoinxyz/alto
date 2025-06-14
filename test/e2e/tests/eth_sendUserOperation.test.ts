@@ -1,4 +1,4 @@
-import { encodeNonce } from "permissionless/utils"
+import { encodeNonce, getRequiredPrefund } from "permissionless/utils"
 import {
     http,
     type Hex,
@@ -11,7 +11,6 @@ import {
     concat
 } from "viem"
 import {
-    type EntryPointVersion,
     UserOperationReceiptNotFoundError,
     entryPoint06Address,
     entryPoint07Address,
@@ -29,6 +28,11 @@ import {
 import { ENTRYPOINT_V06_ABI, ENTRYPOINT_V07_ABI } from "../src/utils/abi.js"
 import { getNonceKeyAndValue } from "../src/utils/userop.js"
 import { deployPaymaster } from "../src/testPaymaster.js"
+import {
+    type EntryPointVersion,
+    entryPoint08Address,
+    getViemEntryPointVersion
+} from "../src/constants.js"
 
 describe.each([
     {
@@ -38,6 +42,10 @@ describe.each([
     {
         entryPoint: entryPoint07Address,
         entryPointVersion: "0.7" as EntryPointVersion
+    },
+    {
+        entryPoint: entryPoint08Address,
+        entryPointVersion: "0.8" as EntryPointVersion
     }
 ])(
     "$entryPointVersion supports eth_sendUserOperation",
@@ -482,15 +490,15 @@ describe.each([
 
             const invalidPaymasterSignature = "0xff"
 
-            if (entryPointVersion === "0.7") {
-                op.paymaster = paymaster
-                op.paymasterData = invalidPaymasterSignature // FAILING CONDITION
-                op.paymasterVerificationGasLimit = 100_000n
-            } else {
+            if (entryPointVersion === "0.6") {
                 op.paymasterAndData = concat([
                     paymaster,
                     invalidPaymasterSignature
                 ])
+            } else {
+                op.paymaster = paymaster
+                op.paymasterData = invalidPaymasterSignature // FAILING CONDITION
+                op.paymasterVerificationGasLimit = 100_000n
             }
 
             op.signature = await client.account.signUserOperation(op)
@@ -505,6 +513,59 @@ describe.each([
                     )
                 })
             )
+        })
+
+        test("Should reject userOperation with insufficient prefund", async () => {
+            const client = await getSmartAccountClient({
+                entryPointVersion,
+                anvilRpc,
+                altoRpc
+            })
+
+            const op = (await client.prepareUserOperation({
+                calls: [
+                    {
+                        to: TO_ADDRESS,
+                        value: 0n,
+                        data: "0x"
+                    }
+                ]
+            })) as UserOperation
+
+            op.signature = await client.account.signUserOperation(op)
+
+            const requiedPrefund = getRequiredPrefund({
+                userOperation: op,
+                entryPointVersion: getViemEntryPointVersion(entryPointVersion)
+            })
+
+            // Should throw when there is insufficient prefund
+            await anvilClient.setBalance({
+                address: client.account.address,
+                value: requiedPrefund - 1n
+            })
+
+            await expect(async () => {
+                await client.sendUserOperation(op)
+            }).rejects.toThrowError(
+                expect.objectContaining({
+                    name: "UserOperationExecutionError",
+                    details: expect.stringMatching(/(AA21|didn't pay prefund)/i)
+                })
+            )
+
+            // Should be able to send userOperation when there is sufficient prefund
+            await anvilClient.setBalance({
+                address: client.account.address,
+                value: requiedPrefund
+            })
+
+            const hash = await client.sendUserOperation(op)
+
+            await new Promise((resolve) => setTimeout(resolve, 1500))
+
+            const receipt = await client.waitForUserOperationReceipt({ hash })
+            expect(receipt.success).toEqual(true)
         })
     }
 )

@@ -41,7 +41,7 @@ export const pimlicoSendUserOperationNowHandler = createMethodHandler({
         )
 
         // Prepare bundle
-        const userOperationInfo: UserOpInfo = {
+        const userOpInfo: UserOpInfo = {
             userOp: userOperation,
             userOpHash: await getUserOperationHash({
                 userOperation: userOperation,
@@ -49,15 +49,17 @@ export const pimlicoSendUserOperationNowHandler = createMethodHandler({
                 chainId: rpcHandler.config.chainId,
                 publicClient: rpcHandler.config.publicClient
             }),
-            addedToMempool: Date.now()
+            addedToMempool: Date.now(),
+            submissionAttempts: 0
         }
         const bundle: UserOperationBundle = {
             entryPoint,
-            userOps: [userOperationInfo],
+            userOps: [userOpInfo],
             version: isVersion06(userOperation)
                 ? ("0.6" as const)
                 : ("0.7" as const)
         }
+        rpcHandler.mempool.store.addProcessing({ entryPoint, userOpInfo })
         const result =
             await rpcHandler.executorManager.sendBundleToExecutor(bundle)
 

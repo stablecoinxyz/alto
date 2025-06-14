@@ -1,0 +1,23 @@
+# Ignore build outputs
+build/
+dist/
+out/
+
+# Ignore dependencies
+node_modules/
+
+# Ignore generated files
+*.generated.*
+*.min.*
+
+# Ignore large data files
+*.csv
+*.json
+*.log
+
+# Ignore specific files
+# Add your specific files here, for example:
+# src/sensitive-data.ts
+# test/fixtures/large-data.json 
+
+debug/

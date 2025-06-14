@@ -1,8 +1,9 @@
 {
     "compilerOptions": {
-        "module": "NodeNext",
+        "module": "NodeNext", 
         "target": "ESNext",
         "sourceMap": true,
+        "types": ["mocha"],
         "outDir": "./build",
         "rootDir": "./",
         //"moduleResolution": "node",
@@ -12,6 +13,7 @@
         "resolveJsonModule": true,
         "noImplicitAny": false,
         "skipLibCheck": true,
+        "noEmit": true
         // "types": [
         //     "bun-types"
         // ]

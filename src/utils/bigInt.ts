@@ -1,9 +1,9 @@
-/// Resturns the bigger of two BigInts.
+/// Returns the smaller of two BigInts.
 export const minBigInt = (a: bigint, b: bigint) => {
     return a < b ? a : b
 }
 
-/// Returns the smaller of two BigInts.
+/// Returns the larger of two BigInts.
 export const maxBigInt = (a: bigint, b: bigint) => {
     return a > b ? a : b
 }
@@ -14,4 +14,12 @@ export const scaleBigIntByPercent = (
     percent: bigint
 ): bigint => {
     return (value * percent) / 100n
+}
+
+export const roundUpBigInt = ({
+    value,
+    multiple
+}: { value: bigint; multiple: bigint }): bigint => {
+    const remainder = value % multiple
+    return remainder === 0n ? value : value + (multiple - remainder)
 }

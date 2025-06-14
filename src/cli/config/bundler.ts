@@ -5,7 +5,7 @@ import {
     commaSeperatedAddressPattern,
     hexData32Schema
 } from "@alto/types"
-import type { Hex } from "viem"
+import { parseGwei, type Hex } from "viem"
 import { type Account, privateKeyToAccount } from "viem/accounts"
 import { z } from "zod"
 
@@ -95,6 +95,16 @@ export const executorArgsSchema = z.object({
         .optional(),
     "utility-wallet-monitor": z.boolean(),
     "utility-wallet-monitor-interval": z.number(),
+    "resubmit-multiplier-ceiling": z.string().transform((val) => BigInt(val)),
+    "gas-limit-rounding-multiple": z
+        .string()
+        .transform((val) => BigInt(val))
+        .refine(
+            (value) => value > 0n,
+            "Gas limit rounding multiple must be a positive number"
+        )
+        .optional()
+        .default("4337"),
     "executor-private-keys": z.union([
         z
             .array(hexData32Schema)
@@ -119,7 +129,11 @@ export const executorArgsSchema = z.object({
         .transform((val) => BigInt(val))
         .optional(),
     "executor-refill-interval": z.number().int().min(0),
-    "executor-gas-multiplier": z.string().transform((val) => BigInt(val))
+    "executor-gas-multiplier": z.string().transform((val) => BigInt(val)),
+    "send-handle-ops-retry-count": z.number().int().default(3),
+    "transaction-underpriced-multiplier": z
+        .string()
+        .transform((val) => BigInt(val))
 })
 
 export const compatibilityArgsSchema = z.object({
@@ -147,6 +161,14 @@ export const compatibilityArgsSchema = z.object({
     "fixed-gas-limit-for-estimation": z
         .string()
         .transform((val) => BigInt(val))
+        .optional(),
+    "floor-max-fee-per-gas": z
+        .string()
+        .transform((val) => parseGwei(val))
+        .optional(),
+    "floor-max-priority-fee-per-gas": z
+        .string()
+        .transform((val) => parseGwei(val))
         .optional()
 })
 
