@@ -17,6 +17,7 @@
         "start": "node src/lib/cli/alto.js run",
         "start-base-sepolia": "node src/lib/cli/alto.js run --config config.baseSepolia.json",
         "start-base": "node src/lib/cli/alto.js run --config config.base.json",
+        "start-radius-testnet": "node src/lib/cli/alto.js run --config config.radiusTestnet.json",
         "dev": "nodemon --ext ts,js,json --watch src --exec DOTENV_CONFIG_PATH=$(pwd)/.env ts-node --project src/tsconfig.json -r tsconfig-paths/register src/cli/alto.ts run",
         "test": "pnpm --filter e2e run test",
         "test:ci": "pnpm --filter e2e run test:ci",
@@ -47,6 +48,10 @@
     "engines": {
         "node": ">=18.0.0"
     },
-    "workspaces": ["src/", "test/e2e/*", "scripts/localDeployer"],
+    "workspaces": [
+        "src/",
+        "test/e2e/*",
+        "scripts/localDeployer"
+    ],
     "packageManager": "pnpm@8.15.4+sha256.cea6d0bdf2de3a0549582da3983c70c92ffc577ff4410cbf190817ddc35137c2"
 }
