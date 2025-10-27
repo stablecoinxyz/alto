@@ -18,6 +18,25 @@
 	path = contracts/lib/account-abstraction-v7
 	url = https://github.com/eth-infinitism/account-abstraction
 	branch = releases/v0.7
+[submodule "contracts/lib/account-abstraction-v8"]
+	path = contracts/lib/account-abstraction-v8
+	url = https://github.com/eth-infinitism/account-abstraction
+	branch = releases/v0.8
 [submodule "contracts/lib/solady"]
 	path = contracts/lib/solady
 	url = https://github.com/vectorized/solady
+[submodule "contracts/lib/openzeppelin-contracts-51"]
+	path = contracts/lib/openzeppelin-contracts-51
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "contracts/lib/openzeppelin-contracts-v4.8.3"]
+	path = contracts/lib/openzeppelin-contracts-v4.8.3
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "contracts/lib/openzeppelin-contracts-v5.0.2"]
+	path = contracts/lib/openzeppelin-contracts-v5.0.2
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "contracts/lib/openzeppelin-contracts-v5.1.0"]
+	path = contracts/lib/openzeppelin-contracts-v5.1.0
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "contracts/lib/singleton-paymaster"]
+	path = contracts/lib/singleton-paymaster
+	url = https://github.com/eth-infinitism/singleton-paymaster

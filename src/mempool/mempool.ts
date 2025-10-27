@@ -31,12 +31,14 @@ import {
 } from "./reputationManager"
 import type { AltoConfig } from "../createConfig"
 import type { MempoolStore } from "@alto/store"
+import { calculateAA95GasFloor } from "../executor/utils"
+import { privateKeyToAddress, generatePrivateKey } from "viem/accounts"
 
 export class Mempool {
     private config: AltoConfig
     private monitor: Monitor
     private reputationManager: InterfaceReputationManager
-    private store: MempoolStore
+    public store: MempoolStore
     private throttledEntityBundleCount: number
     private logger: Logger
     private validator: InterfaceValidator
@@ -337,7 +339,8 @@ export class Mempool {
                 userOp,
                 userOpHash,
                 referencedContracts,
-                addedToMempool: Date.now()
+                addedToMempool: Date.now(),
+                submissionAttempts: 0
             }
         })
 
@@ -346,7 +349,7 @@ export class Mempool {
             transactionHash: null
         })
 
-        await this.eventManager.emitAddedToMempool(userOpHash)
+        this.eventManager.emitAddedToMempool(userOpHash)
         return [true, ""]
     }
 
@@ -507,7 +510,6 @@ export class Mempool {
             }
 
             validationResult = await this.validator.validateUserOperation({
-                shouldCheckPrefund: false,
                 userOperation: userOp,
                 queuedUserOperations,
                 entryPoint,
@@ -725,13 +727,14 @@ export class Mempool {
                     continue
                 }
 
-                gasUsed +=
-                    userOp.callGasLimit +
-                    userOp.verificationGasLimit +
-                    (isVersion07(userOp)
-                        ? (userOp.paymasterPostOpGasLimit || 0n) +
-                          (userOp.paymasterVerificationGasLimit || 0n)
-                        : 0n)
+                const beneficiary =
+                    this.config.utilityPrivateKey?.address ||
+                    privateKeyToAddress(generatePrivateKey())
+
+                gasUsed += calculateAA95GasFloor({
+                    userOps: [userOp],
+                    beneficiary
+                })
 
                 // Only break on gas limit if we've hit minOpsPerBundle
                 if (

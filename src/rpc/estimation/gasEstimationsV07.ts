@@ -356,6 +356,7 @@ export class GasEstimatorV07 {
             userOperation,
             queuedUserOperations
         })
+
         stateOverrides = getAuthorizationStateOverrides({
             userOperations: [...queuedUserOperations, userOperation],
             stateOverrides
@@ -812,7 +813,7 @@ export class GasEstimatorV07 {
         })
 
         // Remove state override if not supported by network.
-        if (!this.config.balanceOverride) {
+        if (!this.config.balanceOverride && !this.config.codeOverrideSupport) {
             stateOverrides = undefined
         }
 
@@ -1072,13 +1073,25 @@ function getSimulateHandleOpResult(data: Hex): SimulateHandleOpResult {
                 code: ValidationErrors.SimulateValidation
             } as const
         }
+
+        if (
+            decodedError &&
+            decodedError.errorName === "CallPhaseReverted" &&
+            decodedError.args
+        ) {
+            return {
+                result: "failed",
+                data: decodedError.args[0],
+                code: ValidationErrors.SimulateValidation
+            } as const
+        }
     } catch {
         // no error we go the result
         const decodedResult: ExecutionResult = decodeFunctionResult({
             abi: EntryPointV07SimulationsAbi,
             functionName: "simulateHandleOp",
             data
-        }) as unknown as ExecutionResult
+        })
 
         return {
             result: "execution",

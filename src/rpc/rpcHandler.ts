@@ -1,4 +1,8 @@
-import type { Executor, ExecutorManager } from "@alto/executor"
+import {
+    calculateAA95GasFloor,
+    type Executor,
+    type ExecutorManager
+} from "@alto/executor"
 import type { EventManager, GasPriceManager } from "@alto/handlers"
 import type {
     InterfaceReputationManager,
@@ -29,11 +33,11 @@ import {
     scaleBigIntByPercent
 } from "@alto/utils"
 import { type Hex, getContract, zeroAddress } from "viem"
-import { base, baseSepolia, optimism } from "viem/chains"
 import type { AltoConfig } from "../createConfig"
 import type { MethodHandler } from "./createMethodHandler"
 import { registerHandlers } from "./methods"
 import { recoverAuthorizationAddress } from "viem/utils"
+import { privateKeyToAddress, generatePrivateKey } from "viem/accounts"
 
 export class RpcHandler {
     public config: AltoConfig
@@ -176,31 +180,18 @@ export class RpcHandler {
             throw new RpcError(reason)
         }
 
-        if (isVersion07(userOperation)) {
-            const gasLimits =
-                userOperation.callGasLimit +
-                userOperation.verificationGasLimit +
-                (userOperation.paymasterPostOpGasLimit ?? 0n) +
-                (userOperation.paymasterVerificationGasLimit ?? 0n)
+        const beneficiary =
+            this.config.utilityPrivateKey?.address ||
+            privateKeyToAddress(generatePrivateKey())
+        const gasLimits = calculateAA95GasFloor({
+            userOps: [userOperation],
+            beneficiary
+        })
 
-            if (gasLimits > this.config.maxGasPerBundle) {
-                throw new RpcError(
-                    `User operation gas limits exceed the max gas per bundle: ${gasLimits} > ${this.config.maxGasPerBundle}`
-                )
-            }
-        }
-
-        if (isVersion06(userOperation)) {
-            const gasLimits =
-                userOperation.callGasLimit + userOperation.verificationGasLimit
-
-            const maxGasPerBundle = (this.config.maxGasPerBundle * 130n) / 100n
-
-            if (gasLimits > maxGasPerBundle) {
-                throw new RpcError(
-                    `User operation gas limits exceed the max gas per bundle: ${gasLimits} > ${this.config.maxGasPerBundle}`
-                )
-            }
+        if (gasLimits > this.config.maxGasPerBundle) {
+            throw new RpcError(
+                `User operation gas limits exceed the max gas per bundle: ${gasLimits} > ${this.config.maxGasPerBundle}`
+            )
         }
     }
 
@@ -289,11 +280,7 @@ export class RpcHandler {
             userOperation
         )
 
-        // V1 api doesn't check prefund.
-        const shouldCheckPrefund =
-            apiVersion !== "v1" && this.config.shouldCheckPrefund
         const validationResult = await this.validator.validateUserOperation({
-            shouldCheckPrefund,
             userOperation,
             queuedUserOperations,
             entryPoint
@@ -334,6 +321,13 @@ export class RpcHandler {
         if (!userOperation.eip7702Auth) {
             throw new RpcError(
                 "UserOperation is missing eip7702Auth",
+                ValidationErrors.InvalidFields
+            )
+        }
+
+        if (!this.config.codeOverrideSupport) {
+            throw new RpcError(
+                "eip7702Auth is not supported on this chain",
                 ValidationErrors.InvalidFields
             )
         }
@@ -575,7 +569,6 @@ export class RpcHandler {
         } = calcVerificationGasAndCallGasLimit(
             simulationUserOperation,
             executionResult.data.executionResult,
-            this.config.chainId,
             executionResult.data
         )
 
@@ -607,24 +600,18 @@ export class RpcHandler {
                 executionResult.data.executionResult.paymasterPostOpGasLimit ||
                 1n
 
-            paymasterPostOpGasLimit = scaleBigIntByPercent(
-                paymasterPostOpGasLimit,
-                this.config.paymasterGasLimitMultiplier
+            const userOperationPaymasterPostOpGasLimit =
+                "paymasterPostOpGasLimit" in userOperation
+                    ? userOperation.paymasterPostOpGasLimit ?? 1n
+                    : 1n
+
+            paymasterPostOpGasLimit = maxBigInt(
+                userOperationPaymasterPostOpGasLimit,
+                scaleBigIntByPercent(
+                    paymasterPostOpGasLimit,
+                    this.config.paymasterGasLimitMultiplier
+                )
             )
-        }
-
-        if (
-            this.config.chainId === base.id ||
-            this.config.chainId === baseSepolia.id
-        ) {
-            callGasLimit += 10_000n
-        }
-
-        if (
-            this.config.chainId === base.id ||
-            this.config.chainId === optimism.id
-        ) {
-            callGasLimit = maxBigInt(callGasLimit, 120_000n)
         }
 
         if (simulationUserOperation.callData === "0x") {

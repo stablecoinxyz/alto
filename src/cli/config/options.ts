@@ -326,6 +326,19 @@ export const executorOptions: CliCommandOptions<IExecutorArgsInput> = {
         require: false,
         default: "125"
     },
+    "resubmit-multiplier-ceiling": {
+        description:
+            "Maximum multiplier for gasPrice when resubmitting transactions",
+        type: "string",
+        require: false,
+        default: "300"
+    },
+    "gas-limit-rounding-multiple": {
+        description: "Value to round transaction gas limit to the nearest multiple of",
+        type: "string",
+        require: false,
+        default: "4337"
+    },
     "refilling-wallets": {
         description: "Enable refilling wallets",
         type: "boolean",
@@ -386,6 +399,20 @@ export const executorOptions: CliCommandOptions<IExecutorArgsInput> = {
         type: "number",
         require: true,
         default: 60 * 20
+    },
+    "transaction-underpriced-multiplier": {
+        description:
+            "GasPrice Multiplier to use when retrying in event of Transaction Underpriced error",
+        type: "string",
+        require: false,
+        default: "150"
+    },
+    "send-handle-ops-retry-count": {
+        description:
+            "Number of times to retry calling sendHandleOps transaction",
+        type: "number",
+        require: false,
+        default: 3
     }
 }
 
@@ -443,6 +470,17 @@ export const compatibilityOptions: CliCommandOptions<ICompatibilityArgsInput> =
             type: "string",
             require: false,
             default: "v1"
+        },
+        "floor-max-fee-per-gas": {
+            description: "Minimum value for maxFeePerGas to enforce (in gwei)",
+            type: "string",
+            require: false
+        },
+        "floor-max-priority-fee-per-gas": {
+            description:
+                "Minimum value for maxPriorityFeePerGas to enforce (in gwei)",
+            type: "string",
+            require: false
         }
     }
 
