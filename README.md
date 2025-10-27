@@ -43,6 +43,34 @@ pnpm test # note: foundry must be installed on the machine for this to work
 - build & run bundler with `--environment development --bundleMode manual --safeMode true`
 
 
+## SBC Modifications
+
+This fork includes several enhancements and configurations specific to SBC's deployment needs:
+
+### Network Support
+- **Radius Testnet Configuration**: Added pre-configured templates for deploying on Radius Testnet
+  - Configuration template: `config.radiusTestnet.json.template`
+  - Docker deployment: `Dockerfile.radius-testnet`
+  - EntryPoint: `0x9b443e4bd122444852B52331f851a000164Cc83F`
+
+- **Base Network Support**: Added configurations for Base mainnet and Base Sepolia
+  - Configuration templates: `config.base.json.template` and `config.baseSepolia.json.template`
+  - Docker deployments: `Dockerfile.base` and `Dockerfile.base-sepolia`
+
+### Key Enhancements
+- **CORS Support**: Enabled cross-origin resource sharing for browser-based applications
+- **IPv6 Compatibility**: Added dual-stack IPv4/IPv6 support for improved network accessibility
+- **Block Range Limits**: Configured `max-block-range: 490` to comply with RPC provider limits (e.g., Alchemy's 500 block limit)
+- **Gas Fee Optimization**: Tuned gas fee scaling for better transaction inclusion during network congestion
+- **Railway Deployment**: Production-ready Docker configurations with environment variable management
+
+### Configuration
+All network configurations use environment variables for secure deployment:
+- `ALTO_RPC_URL`: Network RPC endpoint
+- `ALTO_EXECUTOR_PRIVATE_KEYS`: Private keys for executor accounts
+- `ALTO_UTILITY_PRIVATE_KEY`: Private key for utility operations
+- `SENTRY_DSN`: (Optional) Sentry error tracking
+
 ## License
 
 Distributed under the GPL-3.0 License. See [LICENSE](./LICENSE) for more information.
