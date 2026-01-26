@@ -51,7 +51,7 @@ This fork includes several enhancements and configurations specific to SBC's dep
 - **Radius Testnet Configuration**: Added pre-configured templates for deploying on Radius Testnet
   - Configuration template: `config.radiusTestnet.json.template`
   - Docker deployment: `Dockerfile.radius-testnet`
-  - EntryPoint: `0x9b443e4bd122444852B52331f851a000164Cc83F`
+  - EntryPoint: `0xfA15FF1e8e3a66737fb161e4f9Fa8935daD7B04F`
 
 - **Base Network Support**: Added configurations for Base mainnet and Base Sepolia
   - Configuration templates: `config.base.json.template` and `config.baseSepolia.json.template`
