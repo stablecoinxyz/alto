@@ -1,0 +1,20 @@
+{
+    "network-name": "radius",
+    "rpc-url": "$ALTO_RPC_URL",
+    "min-entity-stake": 1,
+    "min-executor-balance": "100000000000000000",
+    "min-entity-unstake-delay": 1,
+    "max-bundle-wait": 3,
+    "max-bundle-size": 3,
+    "max-block-range": 490,
+    "port": 4337,
+    "executor-private-keys": "$ALTO_EXECUTOR_PRIVATE_KEYS",
+    "utility-private-key": "$ALTO_UTILITY_PRIVATE_KEY",
+    "entrypoints": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "enable-debug-endpoints": true,
+    "expiration-check": false,
+    "safe-mode": false,
+    "api-version": "v1,v2",
+    "public-client-log-level": "info",
+    "log-level": "debug"
+}
