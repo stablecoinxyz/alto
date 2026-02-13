@@ -10,7 +10,7 @@
     "port": 4337,
     "executor-private-keys": "$ALTO_EXECUTOR_PRIVATE_KEYS",
     "utility-private-key": "$ALTO_UTILITY_PRIVATE_KEY",
-    "entrypoints": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "entrypoints": "0xfA15FF1e8e3a66737fb161e4f9Fa8935daD7B04F",
     "enable-debug-endpoints": true,
     "expiration-check": false,
     "safe-mode": false,
