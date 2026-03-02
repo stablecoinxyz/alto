@@ -16,6 +16,7 @@
     "expiration-check": false,
     "safe-mode": false,
     "api-version": "v1,v2",
-    "public-client-log-level": "info",
-    "log-level": "debug"
+    "json": true,
+    "public-client-log-level": "warn",
+    "log-level": "warn"
 }
