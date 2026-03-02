@@ -87,6 +87,9 @@ export class GasPriceManager {
         switch (chainId) {
             case polygon.id:
                 return parseGwei("31")
+            case 723: // Radius Mainnet - fixed gas price (0x3ac525e0 wei)
+                // https://docs.radiustech.xyz/developer-resources/fees
+                return 985998816n
             default:
                 return 0n
         }
