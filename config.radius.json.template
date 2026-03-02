@@ -15,6 +15,7 @@
     "expiration-check": false,
     "safe-mode": false,
     "api-version": "v1,v2",
+    "fixed-gas-limit-for-estimation": "10000000",
     "json": true,
     "public-client-log-level": "warn",
     "log-level": "warn"
