@@ -21,5 +21,6 @@
     "floor-max-priority-fee-per-gas": "1",
     "json": true,
     "public-client-log-level": "warn",
-    "log-level": "warn"
+    "log-level": "warn",
+    "entrypoint-simulation-contract-v7": "0xcE77355CD450f1272841cF4aD10a93E65466041C"
 }
