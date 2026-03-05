@@ -16,6 +16,7 @@
     "safe-mode": false,
     "api-version": "v1,v2",
     "fixed-gas-limit-for-estimation": "10000000",
+    "legacy-transactions": true,
     "floor-max-fee-per-gas": "1",
     "floor-max-priority-fee-per-gas": "1",
     "json": true,
