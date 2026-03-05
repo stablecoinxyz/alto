@@ -16,6 +16,8 @@
     "safe-mode": false,
     "api-version": "v1,v2",
     "fixed-gas-limit-for-estimation": "10000000",
+    "floor-max-fee-per-gas": "1",
+    "floor-max-priority-fee-per-gas": "1",
     "json": true,
     "public-client-log-level": "warn",
     "log-level": "warn"
