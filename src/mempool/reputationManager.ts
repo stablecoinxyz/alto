@@ -177,7 +177,10 @@ export class NullReputationManager implements InterfaceReputationManager {
         _entryPoint: Address,
         _address: `0x${string}` | null
     ): ReputationStatus {
-        throw new Error("Method not implemented.")
+        throw new RpcError(
+            "Reputation tracking is disabled, enable safe-mode to use it",
+            ValidationErrors.InvalidRequest
+        )
     }
 
     getStakeStatus(
@@ -187,7 +190,10 @@ export class NullReputationManager implements InterfaceReputationManager {
         stakeInfo: StakeInfo
         isStaked: boolean
     }> {
-        throw new Error("Method not implemented.")
+        throw new RpcError(
+            "Reputation tracking is disabled, enable safe-mode to use it",
+            ValidationErrors.InvalidRequest
+        )
     }
 
     clear(): void {

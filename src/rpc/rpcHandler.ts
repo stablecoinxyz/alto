@@ -124,10 +124,11 @@ export class RpcHandler {
 
     ensureEntryPointIsSupported(entryPoint: Address) {
         if (!this.config.entrypoints.includes(entryPoint)) {
-            throw new Error(
+            throw new RpcError(
                 `EntryPoint ${entryPoint} not supported, supported EntryPoints: ${this.config.entrypoints.join(
                     ", "
-                )}`
+                )}`,
+                ValidationErrors.InvalidFields
             )
         }
     }

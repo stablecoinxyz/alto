@@ -208,7 +208,16 @@ export class GasEstimatorV06 {
                 .safeParse(cause?.cause)
 
             if (!causeParseResult.success) {
-                throw new Error(JSON.stringify(cause))
+                // The node reverted without decodable revert data, or with an
+                // error code outside the expected set. Report it as a simulation
+                // failure — serializing the raw viem error here surfaces it as an
+                // internal server fault instead of a client-facing result.
+                throw new RpcError(
+                    `UserOperation simulation failed: ${
+                        err.details ?? "could not decode revert data"
+                    }`,
+                    ValidationErrors.SimulateValidation
+                )
             }
 
             const data = causeParseResult.data.data
