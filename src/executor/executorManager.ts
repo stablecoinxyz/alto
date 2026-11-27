@@ -534,7 +534,80 @@ export class ExecutorManager {
         })
     }
 
+    private async getTransactionReceipt(
+        txHash: HexData32,
+        maxAttempts = Number.POSITIVE_INFINITY
+    ): Promise<TransactionReceipt> {
+        let attempts = 0
+        while (true) {
+            try {
+                return await this.getTransactionReceiptWithGasPrice(txHash)
+            } catch (e) {
+                if (!(e instanceof TransactionReceiptNotFoundError)) {
+                    throw e
+                }
+                attempts++
+                if (attempts >= maxAttempts) {
+                    throw e
+                }
+                await new Promise((resolve) => setTimeout(resolve, 100))
+            }
+        }
+    }
+
+    private async getTransactionReceiptWithGasPrice(txHash: HexData32) {
+        const transactionReceipt =
+            await this.config.publicClient.getTransactionReceipt({
+                hash: txHash
+            })
+
+        let effectiveGasPrice: bigint | undefined =
+            transactionReceipt.effectiveGasPrice ??
+            (transactionReceipt as any).gasPrice ??
+            undefined
+
+        if (effectiveGasPrice === undefined) {
+            const tx = await this.config.publicClient.getTransaction({
+                hash: txHash
+            })
+            effectiveGasPrice = tx.gasPrice ?? undefined
+        }
+
+        if (effectiveGasPrice) {
+            transactionReceipt.effectiveGasPrice = effectiveGasPrice
+        }
+
+        return transactionReceipt
+    }
+
     async getUserOperationReceipt(userOperationHash: HexData32) {
+        let txHash: HexData32 | null = null
+        try {
+            const status =
+                await this.monitor.getUserOperationStatus(userOperationHash)
+            if (status.status === "included") {
+                txHash = status.transactionHash
+            }
+        } catch (error) {
+            this.logger.warn(
+                { error, userOperationHash },
+                "failed to get user operation status"
+            )
+        }
+
+        if (txHash !== null) {
+            try {
+                const receipt = await this.getTransactionReceipt(txHash, 3)
+                return parseUserOperationReceipt(userOperationHash, receipt)
+            } catch (error) {
+                this.logger.warn(
+                    { error, userOperationHash, transactionHash: txHash },
+                    "failed to resolve included user operation receipt"
+                )
+                txHash = null
+            }
+        }
+
         const userOperationEventAbiItem = getAbiItem({
             abi: EntryPointV07Abi,
             name: "UserOperationEvent"
@@ -590,51 +663,13 @@ export class ExecutorManager {
             throw new Error("userOperationEvent has undefined members")
         }
 
-        const txHash = userOperationEvent.transactionHash
+        txHash = userOperationEvent.transactionHash
         if (txHash === null) {
             // transaction pending
             return null
         }
 
-        const getTransactionReceipt = async (
-            txHash: HexData32
-        ): Promise<TransactionReceipt> => {
-            while (true) {
-                try {
-                    const transactionReceipt =
-                        await this.config.publicClient.getTransactionReceipt({
-                            hash: txHash
-                        })
-
-                    let effectiveGasPrice: bigint | undefined =
-                        transactionReceipt.effectiveGasPrice ??
-                        (transactionReceipt as any).gasPrice ??
-                        undefined
-
-                    if (effectiveGasPrice === undefined) {
-                        const tx =
-                            await this.config.publicClient.getTransaction({
-                                hash: txHash
-                            })
-                        effectiveGasPrice = tx.gasPrice ?? undefined
-                    }
-
-                    if (effectiveGasPrice) {
-                        transactionReceipt.effectiveGasPrice = effectiveGasPrice
-                    }
-
-                    return transactionReceipt
-                } catch (e) {
-                    if (e instanceof TransactionReceiptNotFoundError) {
-                        continue
-                    }
-
-                    throw e
-                }
-            }
-        }
-
-        const receipt = await getTransactionReceipt(txHash)
+        const receipt = await this.getTransactionReceipt(txHash)
         const logs = receipt.logs
 
         if (
@@ -652,12 +687,7 @@ export class ExecutorManager {
             return null
         }
 
-        const userOperationReceipt = parseUserOperationReceipt(
-            userOperationHash,
-            receipt
-        )
-
-        return userOperationReceipt
+        return parseUserOperationReceipt(userOperationHash, receipt)
     }
 
     async handleBlock(block: Block) {
