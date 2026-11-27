@@ -3,7 +3,9 @@ import {
     type Address,
     type Hex,
     concat,
-    encodeFunctionData
+    createTestClient,
+    encodeFunctionData,
+    http
 } from "viem"
 import {
     type UserOperation,
@@ -212,6 +214,20 @@ describe.each([
             expect(receipt?.success).toEqual(true)
             expect(receipt?.reason).toBeUndefined()
             expect(receipt?.paymaster).toEqual(paymaster)
-        })
+
+            const anvilClient = createTestClient({
+                chain: foundry,
+                mode: "anvil",
+                transport: http(anvilRpc, { timeout: 120_000 })
+            })
+            await anvilClient.mine({ blocks: 10_001 })
+
+            const receiptBeyondLogRange =
+                await smartAccountClient.getUserOperationReceipt({ hash })
+
+            expect(receiptBeyondLogRange).not.toBeNull()
+            expect(receiptBeyondLogRange?.success).toEqual(true)
+            expect(receiptBeyondLogRange?.paymaster).toEqual(paymaster)
+        }, 180_000)
     }
 )

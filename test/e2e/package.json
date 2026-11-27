@@ -4,6 +4,8 @@
     "type": "module",
     "private": true,
     "scripts": {
+        "pretest": "pnpm --dir ../.. run build",
+        "pretest:ci": "pnpm --dir ../.. run build",
         "test": "vitest dev -c ./vitest.config.ts",
         "test:ci": "CI=true && vitest -c ./vitest.config.ts"
     },
